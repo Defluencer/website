@@ -189,7 +189,7 @@ impl Inputs {
     }
 
     fn on_chat_input(&mut self, msg: String) -> bool {
-        if msg.ends_with("\n") {
+        if msg.ends_with('\n') {
             self.temp_msg = msg;
 
             return self.send_message();

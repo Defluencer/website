@@ -103,10 +103,8 @@ impl Component for ContentFeed {
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        if !Rc::ptr_eq(&props.peer_id, &self.props.peer_id) {
-            if props.peer_id.is_some() {
-                self.state = MachineState::Loading;
-            }
+        if !Rc::ptr_eq(&props.peer_id, &self.props.peer_id) && props.peer_id.is_some() {
+            self.state = MachineState::Loading;
         }
 
         if !Rc::ptr_eq(&props.content, &self.props.content) {

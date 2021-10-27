@@ -159,7 +159,7 @@ impl Component for App {
         };
 
         app.check_ipfs();
-        app.get_beacon(&app.props.beacon);
+        app.get_beacon(app.props.beacon);
 
         app
     }
@@ -306,7 +306,7 @@ impl App {
         &self,
         beacon_cid: Cid,
         ipns: Option<Cid>,
-        callback: &Callback<(Cid, Cid, Result<(Cid, T)>)>,
+        callback: &Callback<CallbackResult<T>>,
     ) where
         T: DeserializeOwned + 'static,
     {

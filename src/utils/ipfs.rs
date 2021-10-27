@@ -235,7 +235,7 @@ impl IpfsService {
         U: Into<Cow<'static, str>>,
     {
         if let Err(e) = self.pubsub_stream(&topic.into(), cb.clone(), regis).await {
-            cb.emit(Err(e.into()));
+            cb.emit(Err(e));
         }
 
         #[cfg(debug_assertions)]
