@@ -1,5 +1,6 @@
 use crate::app::AppRoute;
 use crate::components::Navbar;
+use crate::utils::feature_card;
 
 use yew::prelude::{classes, html, Component, ComponentLink, Html, ShouldRender};
 
@@ -39,7 +40,7 @@ impl Component for Home {
                     With immutable and interoperable content, your data cannot be changed and will follow you to any app or website built on the protocol."
                 }
                 </ybc::Subtitle>
-                <ybc::ButtonRouter<AppRoute> route=AppRoute::Settings classes=classes!("is-primary") >
+                <ybc::ButtonRouter<AppRoute> route=AppRoute::Start classes=classes!("is-primary") >
                     {"Get Started"}
                 </ybc::ButtonRouter<AppRoute>>
             </ybc::Container>
@@ -151,24 +152,5 @@ impl Component for Home {
                 </ybc::Footer>
             </>
         }
-    }
-}
-
-fn feature_card(title: &str, text: &str) -> Html {
-    html! {
-        <ybc::Column classes=classes!("is-half", "is-flex") >
-            <ybc::Card>
-                <ybc::CardContent>
-                    <ybc::Media>
-                        <ybc::MediaContent>
-                            <ybc::Title tag="h1" size=ybc::HeaderSize::Is4 > { title } </ybc::Title>
-                        </ybc::MediaContent>
-                    </ybc::Media>
-                    <ybc::Content>
-                        <ybc::Subtitle tag="div" > { text } </ybc::Subtitle>
-                    </ybc::Content>
-                </ybc::CardContent>
-            </ybc::Card>
-        </ybc::Column>
     }
 }

@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use crate::pages::{Content, ContentFeed, Home, LivePage, Settings};
+use crate::pages::{Content, ContentFeed, Home, LivePage, Settings, Start};
 use crate::utils::{IpfsService, LocalStorage, Web3Service};
 
 use wasm_bindgen_futures::spawn_local;
@@ -43,6 +43,9 @@ pub enum AppRoute {
 
     #[to = "/#/feed"]
     Feed,
+
+    #[to = "/#/start"]
+    Start,
 
     #[to = "/"]
     Home,
@@ -204,6 +207,7 @@ impl Component for App {
                             AppRoute::Settings => html! { <Settings storage=storage.clone() peer_id=peer_id.clone() /> },
                             AppRoute::Live => html! { <LivePage peer_id=peer_id.clone() ipfs=ipfs.clone() web3=web3.clone() storage=storage.clone() live=live.clone() bans=bans.clone() mods=mods.clone() /> },
                             AppRoute::Feed => html! { <ContentFeed ipfs=ipfs.clone() storage=storage.clone() content=content.clone() peer_id=peer_id.clone() /> },
+                            AppRoute::Start => html! { <Start /> },
                             AppRoute::Home => html! { <Home /> },
                         }
                     })
