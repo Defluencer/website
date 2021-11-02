@@ -6,20 +6,19 @@ edition = "2018"
 description = "The official Defluencer website"
 
 [dependencies]
-blockies = "0.3"
-chrono ={ version = "0.4", default-features = false, features = ["clock", "wasmbind"] }
+blockies = { version = "0.3", default-features = false }
+chrono = { version = "0.4", default-features = false, features = ["clock", "wasmbind"] }
 cid = { version = "0.7", default-features = false, features = [] }
 either = { version = "1.6", default-features = false, features = [] }
-futures = { version = "0.3", default-features = false, features = ["async-await"] }
-futures-util = { version = "0.3", default-features = false, features = ["io"] }
+futures-util = { version = "0.3", default-features = false, features = [] }
 linked-data = { git = "https://github.com/Defluencer/rust-linked-data" }
-pulldown-cmark = "0.8"
+pulldown-cmark = { version = "0.8", default-features = false, features = [] }
 reqwest = { git = "http://github.com/SionoiS/reqwest", branch = "better_wasm", default-features = false, features = ["json", "multipart", "stream"] }
-serde = { version = "1.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0", default-features = false, features = [] }
 serde_json = { version = "1.0", default-features = false, features = [] }
-wasm-bindgen = { version = "0.2.78", default-features = false, features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.78", default-features = false, features = [] }
 wasm-bindgen-futures = { version = "0.4", default-features = false, features = [] }
-web3 = { git = "http://github.com/SionoiS/rust-web3", branch = "eth_ens", default-features = false, features = ["wasm", "eip-1193"] } #{ path = "../Data/Github/rust-web3", branch = "eth_ens", default-features = false, features = ["wasm", "eip-1193"] }
+web3 = { git = "http://github.com/SionoiS/rust-web3", branch = "eth_ens", default-features = false, features = ["wasm", "eip-1193"] }
 web-sys = { version = "0.3.55", default-features = false, features = [
     "MediaSource",
     "MediaSourceReadyState",
@@ -35,5 +34,5 @@ web-sys = { version = "0.3.55", default-features = false, features = [
     "Navigator",
 ]}
 ybc = { version = "0.2", default-features = false, features = ["router"] }
-yew = { version = "0.18", default-features = false, features = ["web_sys"] }
+yew = { version = "0.18", default-features = false, features = [] }
 yew-router = { version = "0.15", default-features = false, features = [] }

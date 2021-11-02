@@ -32,7 +32,7 @@ impl Component for Start {
                         </ybc::Title>
                         <p>
                         {
-                            "Building decentralized applications is very different from what you might used to.
+                            "Building decentralized applications is very different from what you might be used to.
                             To work effectively, mastering theses concepts is key."
                         }
                         </p>
@@ -58,7 +58,7 @@ impl Component for Start {
                             ", protocol specific "
                         }
                             <a href="https://github.com/Defluencer/rust-linked-data"> { "schemas" } </a>
-                        { " and finally cryptography knowledge can also help." }
+                        { " and general cryptography knowledge can also help." }
                         </p>
                     </ybc::Container>
                 </ybc::Section>
@@ -77,13 +77,13 @@ impl Component for Start {
                         <ul>
                             <li><a href="https://github.com/Defluencer/rust-defluencer">{"rust-defluencer"}</a></li>
                             <li><a href="https://github.com/Defluencer/rust-linked-data">{"rust-linked-data"}</a></li>
-                            <li><a href="https://github.com/Defluencer/website">{"Defluencer website"}</a></li>
+                            <li><a href="https://github.com/Defluencer/website">{"website"}</a></li>
                         </ul>
                         <br />
                         <p>
                             { "Visit the " }
                             <a href="https://github.com/Defluencer"> { "Defluencer" } </a>
-                            { " project page on github for more." }
+                            { " project page for more." }
                         </p>
                     </ybc::Container>
                 </ybc::Section>
@@ -95,6 +95,7 @@ impl Component for Start {
                         <p>
                         {
                             "This website is one implementation of the protocol.
+                            If you were to build your personal website it would work the same. 
                             Navigate to the setting page and following the instructions.
                             You will be asked to install IPFS and need to configure your node appropriately.
                             After it is done, the live and content feed pages will be fonctional."

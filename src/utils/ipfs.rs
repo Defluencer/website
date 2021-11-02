@@ -5,9 +5,9 @@ use std::rc::Rc;
 
 use crate::utils::local_storage::LocalStorage;
 
-use futures::future::Abortable;
-use futures::join;
-use futures::stream::AbortRegistration;
+use futures_util::future::Abortable;
+use futures_util::join;
+use futures_util::stream::AbortRegistration;
 use futures_util::{AsyncBufReadExt, TryStreamExt};
 
 use serde::de::DeserializeOwned;

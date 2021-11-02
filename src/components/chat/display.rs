@@ -6,7 +6,7 @@ use crate::components::chat::message::{MessageData, UIMessage};
 use crate::components::IPFSPubSubError;
 use crate::utils::IpfsService;
 
-use futures::future::AbortHandle;
+use futures_util::future::AbortHandle;
 
 use wasm_bindgen_futures::spawn_local;
 use web_sys::Element;
