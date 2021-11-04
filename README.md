@@ -1,7 +1,22 @@
 # Defluencer Project Website
 
 The official project website.
-Checkout defluencer.eth on Ropsten testnet for the latest dev build.
+
+Visit defluencer.eth on Ropsten testnet for the latest dev build.
+
+## Requirements
+- [Trunk](https://trunkrs.dev/#install)
+- [IPFS](https://docs.ipfs.io/install/command-line/#command-line)
+
+## Deploy
+
+- ```trunk clean```
+- ```trunk build --release```
+- ```ipfs add --cid-version=1 -r www``` 
+- (Optional) ```ipfs pin add <HASH_FROM_PREVIOUS_STEP>```
+- (Optional) Update your [Ethereum Name Service](https://ens.domains/) domain's content hash with ipfs://<<HASH_FROM_PREVIOUS_STEP>>
+- (Optional) Visit a gateway. https://<HASH_FROM_PREVIOUS_STEP>.ipfs.dweb.link
+- Profit!
 
 ## Testing
 ### Setup 1

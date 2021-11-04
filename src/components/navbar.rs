@@ -35,6 +35,12 @@ impl Component for Navbar {
 
         let start = html! {
             <>
+                <Anchor classes="navbar-item" route=AppRoute::Start>
+                    <span class="icon-text">
+                        <span class="icon"><i class="fas fa-directions"></i></span>
+                        <span> {"Get Started"} </span>
+                    </span>
+                </Anchor>
                 <Anchor classes="navbar-item" route=AppRoute::Feed>
                     <span class="icon-text">
                         <span class="icon"><i class="fas fa-rss"></i></span>

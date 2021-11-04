@@ -35,3 +35,24 @@ pub fn timestamp_to_datetime(seconds: u64) -> String {
 
     local_d_t.format("%Y-%m-%d %H:%M:%S").to_string()
 }
+
+use yew::prelude::{classes, html, Html};
+
+pub fn feature_card(title: &str, text: &str) -> Html {
+    html! {
+        <ybc::Column classes=classes!("is-half", "is-flex") >
+            <ybc::Card>
+                <ybc::CardContent>
+                    <ybc::Media>
+                        <ybc::MediaContent>
+                            <ybc::Title tag="h1" size=ybc::HeaderSize::Is4 > { title } </ybc::Title>
+                        </ybc::MediaContent>
+                    </ybc::Media>
+                    <ybc::Content>
+                        <ybc::Subtitle tag="div" > { text } </ybc::Subtitle>
+                    </ybc::Content>
+                </ybc::CardContent>
+            </ybc::Card>
+        </ybc::Column>
+    }
+}

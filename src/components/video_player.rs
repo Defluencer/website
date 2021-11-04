@@ -7,7 +7,7 @@ use crate::components::IPFSPubSubError;
 use crate::utils::seconds_to_timecode;
 use crate::utils::{ExponentialMovingAverage, IpfsService};
 
-use futures::future::AbortHandle;
+use futures_util::future::AbortHandle;
 
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
