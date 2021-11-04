@@ -48,22 +48,22 @@ impl Component for Home {
 
         let live_card = feature_card(
             "Live Streaming",
-            "Set custom resolution, quality and codecs.",
+            "Adaptative bitrate, custom resolutions, qualities and codecs.",
         );
 
         let chat_card = feature_card(
             "Live Chat",
-            "Choose a display name and use your Ethereum public keys as your identity.",
+            "Choose a display name and use your Ethereum address as your identifier.",
         );
 
         let streaming_card = feature_card(
             "On Demand Streaming",
-            "Host your own videos or save live streams to be viewed later.",
+            "Host videos or save your live streams and chat for posterity.",
         );
 
         let blog_card = feature_card(
             "Blogs",
-            "Twitter-style micro blog posts or lengthy articles.",
+            "Micro blog posts or lengthy articles via markdown files.",
         );
 
         let feed_card = feature_card(
@@ -97,8 +97,7 @@ impl Component for Home {
                         <ybc::Title size=ybc::HeaderSize::Is5 >
                             { "How does it work?" }
                         </ybc::Title>
-                        <br />
-                        <ybc::Subtitle size=ybc::HeaderSize::Is6 >
+                        <p>
                             { "With " }
                             <a href="https://ipfs.io/"> { "IPFS" } </a>
                             { " & " }
@@ -107,15 +106,14 @@ impl Component for Home {
                                 " you get a network of content-addressable data that can be linked together in a web and
                                 as a by-product immutability, which means your content cannot be changed, you can share it with your friends
                                 and they will redistribute it, as you do for them.
-                                The defluencer protocol include standard data formats for social media content but can be easily extended."
+                                The defluencer protocol include standard data formats for social media content and can be easily extended."
                             }
-                        </ybc::Subtitle>
+                        </p>
                         <br />
                         <ybc::Title size=ybc::HeaderSize::Is5 >
                             { "This is too good to be true! Is there a catch?" }
                         </ybc::Title>
-                        <br />
-                        <ybc::Subtitle size=ybc::HeaderSize::Is6 >
+                        <p>
                             {
                                 "Yes! Since there's is no company, no server and no authority that freedom comes with responsabilities."
                             }
@@ -123,12 +121,13 @@ impl Component for Home {
                                 <li>
                                 {
                                     "First, AT LEAST one person on the ENTIRE network MUST be online with that content or it cannot be accessed.
-                                    It doesn't have to be you, they don't need ALL your content but more the better, friends should help each others." }
+                                    It doesn't have to be you, they don't need ALL your content but more the better, friends should help each others."
+                                }
                                 </li>
                                 <li> { "Second, the network is PUBLIC, anyone can share your content even if you don't want to and what's on the internet is forever." } </li>
                                 <li> { "Third, what happen in cyberspace is not separate from the real world, cyberspace IS the real world!" } </li>
                             </ul>
-                        </ybc::Subtitle>
+                        </p>
                     </ybc::Container>
                 </ybc::Section>
                 <ybc::Footer>

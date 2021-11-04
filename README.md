@@ -8,7 +8,7 @@ Visit defluencer.eth on Ropsten testnet for the latest dev build.
 - [Trunk](https://trunkrs.dev/#install)
 - [IPFS](https://docs.ipfs.io/install/command-line/#command-line)
 
-## Deloy
+## Deploy
 
 - ```trunk clean```
 - ```trunk build --release```
