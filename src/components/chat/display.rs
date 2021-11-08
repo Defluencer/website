@@ -1,25 +1,32 @@
-use std::collections::VecDeque;
-use std::rc::Rc;
-use std::str;
+use std::{collections::VecDeque, rc::Rc, str};
 
-use crate::components::chat::message::{MessageData, UIMessage};
-use crate::components::IPFSPubSubError;
-use crate::utils::IpfsService;
+use crate::{
+    components::{
+        chat::message::{MessageData, UIMessage},
+        IPFSPubSubError,
+    },
+    utils::IpfsService,
+};
 
 use futures_util::future::AbortHandle;
 
 use wasm_bindgen_futures::spawn_local;
+
 use web_sys::Element;
 
-use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::Callback;
+use yew::{
+    prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback,
+};
 
-use linked_data::chat::{ChatId, Message, MessageType};
-use linked_data::live::Live;
-use linked_data::moderation::{Ban, Bans, ChatModerationCache, Moderators};
-use linked_data::signature::SignedMessage;
-use linked_data::PeerId;
+use linked_data::{
+    chat::{ChatId, MessageType, SignedChat},
+    live::Live,
+    moderation::{Ban, Bans, ChatModerationCache, Moderators},
+    signature::SignedMessage,
+    PeerId,
+};
 
 use blockies::Ethereum;
 
@@ -30,7 +37,7 @@ pub struct Display {
 
     error: bool,
 
-    msg_cb: Callback<(PeerId, Message, Result<SignedMessage<ChatId>>)>,
+    msg_cb: Callback<(PeerId, MessageType, Result<SignedMessage<ChatId>>)>,
 
     pubsub_cb: Callback<Result<(String, Vec<u8>)>>,
     handle: AbortHandle,
@@ -48,7 +55,7 @@ pub struct Display {
 #[allow(clippy::large_enum_variant)]
 pub enum Msg {
     PubSub(Result<(String, Vec<u8>)>),
-    Origin((PeerId, Message, Result<SignedMessage<ChatId>>)),
+    Origin((PeerId, MessageType, Result<SignedMessage<ChatId>>)),
 }
 
 #[derive(Properties, Clone)]
@@ -229,7 +236,7 @@ impl Display {
             return false;
         }
 
-        let msg: Message = match serde_json::from_slice(&data) {
+        let msg: MessageType = match serde_json::from_slice(&data) {
             Ok(msg) => msg,
             Err(e) => {
                 ConsoleService::error(&format!("{:?}", e));
@@ -237,7 +244,7 @@ impl Display {
             }
         };
 
-        if !self.mod_db.is_verified(&from, &msg.sig.link) {
+        if !self.mod_db.is_verified(&from, &msg.signature()) {
             self.get_origin(from, msg);
             return false;
         }
@@ -245,11 +252,11 @@ impl Display {
         self.process_msg(from, msg)
     }
 
-    fn get_origin(&self, from: String, msg: Message) {
+    fn get_origin(&self, from: String, msg: MessageType) {
         spawn_local({
             let cb = self.msg_cb.clone();
             let ipfs = self.props.ipfs.clone();
-            let cid = msg.sig.link;
+            let cid = msg.signature();
 
             async move { cb.emit((from, msg, ipfs.dag_get(cid, Option::<String>::None).await)) }
         });
@@ -259,7 +266,7 @@ impl Display {
     fn on_signed_msg(
         &mut self,
         peer: String,
-        msg: Message,
+        msg: MessageType,
         response: Result<SignedMessage<ChatId>>,
     ) -> bool {
         let sign_msg = match response {
@@ -277,7 +284,7 @@ impl Display {
 
         self.mod_db.add_peer(
             &sign_msg.data.peer_id,
-            msg.sig.link,
+            msg.signature(),
             sign_msg.address,
             Some(sign_msg.data.name),
         );
@@ -307,9 +314,9 @@ impl Display {
         self.process_msg(peer, msg)
     }
 
-    fn process_msg(&mut self, peer: PeerId, msg: Message) -> bool {
-        match msg.msg {
-            MessageType::Chat(msg) => self.update_display(&peer, &msg),
+    fn process_msg(&mut self, peer: PeerId, msg: MessageType) -> bool {
+        match msg {
+            MessageType::Chat(msg) => self.update_display(&peer, msg.content()),
             MessageType::Ban(ban) => self.update_bans(&peer, ban),
             MessageType::Mod(_) => false, //TODO
         }
@@ -370,7 +377,7 @@ impl Display {
             return false;
         }
 
-        self.mod_db.ban_peer(&ban.peer_id);
+        self.mod_db.ban_peer(ban.peer_id());
 
         false
     }

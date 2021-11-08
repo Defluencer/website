@@ -5,18 +5,22 @@ use crate::utils::{IpfsService, LocalStorage, Web3Service};
 
 use wasm_bindgen_futures::spawn_local;
 
-use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
+use yew::{
+    prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+};
 
 use cid::Cid;
 
-use linked_data::chat::{ChatId, Message, MessageType};
-use linked_data::live::Live;
-use linked_data::signature::SignedMessage;
+use linked_data::{
+    chat::{ChatId, ChatMessage, ChatSig},
+    live::Live,
+    signature::SignedMessage,
+};
 
 use web3::types::Address;
 
-const SIGN_MSG_KEY: &str = "signed_message";
+//const SIGN_MSG_KEY: &str = "signed_message";
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -24,7 +28,7 @@ enum DisplayState {
     /// Before anything, ask user to connect account.
     Connect,
     /// Has use reverse resolution to get a name from an address.
-    NameOk(String),
+    NameResolved,
     /// The signature is ready and can be use for messages.
     Chatting,
 }
@@ -41,7 +45,7 @@ pub struct Inputs {
     peer_id: Option<String>,
     name: Option<String>,
     sign_msg_content: Option<ChatId>,
-    sign_msg_cid: Option<Cid>,
+    sign_msg_cid: Option<ChatSig>,
 }
 
 pub enum Msg {
@@ -70,12 +74,11 @@ impl Component for Inputs {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let (sign_msg_cid, state) = match props.storage.get_cid(SIGN_MSG_KEY) {
+        //TODO should verify that the signed message has not been garbage collected in between session.
+        /* let (sign_msg_cid, state) = match props.storage.get_cid(SIGN_MSG_KEY) {
             Some(cid) => (Some(cid), DisplayState::Chatting),
             None => (None, DisplayState::Connect),
-        };
-
-        //TODO should verify that the signed message has not been garbage collected in between session.
+        }; */
 
         #[cfg(debug_assertions)]
         ConsoleService::info("Chat Inputs Created");
@@ -84,7 +87,7 @@ impl Component for Inputs {
             props,
             link,
 
-            state,
+            state: DisplayState::Connect,
 
             temp_msg: String::default(),
 
@@ -92,7 +95,7 @@ impl Component for Inputs {
             peer_id: None,
             name: None,
             sign_msg_content: None,
-            sign_msg_cid,
+            sign_msg_cid: None,
         }
     }
 
@@ -130,7 +133,7 @@ impl Component for Inputs {
             {
                 match &self.state {
                     DisplayState::Connect => self.connect_dialog(),
-                    DisplayState::NameOk(name) => self.name_dialog(name),
+                    DisplayState::NameResolved => self.name_dialog(),
                     DisplayState::Chatting => self.chat_dialog(),
                 }
             }
@@ -150,12 +153,17 @@ impl Inputs {
         }
     }
 
-    fn name_dialog(&self, name: &str) -> Html {
+    fn name_dialog(&self) -> Html {
+        let name = match &self.name {
+            Some(name) => name.clone(),
+            None => String::new(),
+        };
+
         html! {
             <>
                 <ybc::Field label="Display Name".to_owned() >
                     <ybc::Control>
-                        <ybc::Input name="chat_name" value=name.to_owned() update=self.link.callback(Msg::SetName) />
+                        <ybc::Input name="chat_name" value=name update=self.link.callback(Msg::SetName) />
                     </ybc::Control>
                 </ybc::Field>
                 <ybc::Field label="Confirm your name by signing it".to_owned() >
@@ -213,13 +221,9 @@ impl Inputs {
             }
         };
 
-        let msg = Message {
-            msg: MessageType::Chat(message),
+        let chat_msg = ChatMessage::new(message, cid);
 
-            sig: cid.into(),
-        };
-
-        let json_string = match serde_json::to_string(&msg) {
+        let json_string = match serde_json::to_string(&chat_msg) {
             Ok(json_string) => json_string,
             Err(e) => {
                 ConsoleService::error(&format!("{:#?}", e));
@@ -326,7 +330,8 @@ impl Inputs {
             }
         };
 
-        self.state = DisplayState::NameOk(name);
+        self.name = Some(name);
+        self.state = DisplayState::NameResolved;
 
         true
     }
@@ -446,7 +451,7 @@ impl Inputs {
             }
         };
 
-        self.props.storage.set_cid(SIGN_MSG_KEY, &cid);
+        //self.props.storage.set_cid(SIGN_MSG_KEY, &cid);
 
         self.sign_msg_cid = Some(cid);
         self.state = DisplayState::Chatting;
