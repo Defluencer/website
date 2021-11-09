@@ -102,15 +102,21 @@ impl Web3Service {
     }
 
     //https://eips.ethereum.org/EIPS/eip-181
-    pub async fn get_name(&self, addrs: Address) -> Result<String> {
+    pub async fn reverse_resolve(&self, addrs: Address) -> Result<String> {
         let client = match &self.client {
             Some(clt) => clt,
             None => return Err(NoWeb3.into()),
         };
 
-        let res = client.ens().get_canonical_name(addrs).await?;
+        let name = client.ens().get_canonical_name(addrs).await?;
 
-        Ok(res)
+        let address = client.ens().get_eth_address(&name).await?;
+
+        if address != addrs {
+            return Err(NoMatch.into());
+        }
+
+        Ok(name)
     }
 }
 
@@ -135,3 +141,14 @@ impl std::fmt::Display for NoWeb3 {
 }
 
 impl std::error::Error for NoWeb3 {}
+
+#[derive(Debug)]
+struct NoMatch;
+
+impl std::fmt::Display for NoMatch {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Address and Name do not match")
+    }
+}
+
+impl std::error::Error for NoMatch {}

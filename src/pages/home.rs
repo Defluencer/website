@@ -134,7 +134,7 @@ impl Component for Home {
                     <ybc::Container>
                         <ybc::Columns>
                             <ybc::Column classes=classes!("is-half") >
-                                <a href="https://github.com/Defluencer">
+                                <a href="https://github.com/Defluencer/website">
                                     <span class="icon-text">
                                         <span> {"Source Code"} </span>
                                         <span class="icon"><i class="fab fa-github"></i></span>

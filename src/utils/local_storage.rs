@@ -42,11 +42,11 @@ impl LocalStorage {
         Self { storage }
     }
 
-    /* pub fn remove_item(&self, key: &str) {
+    pub fn remove_item(&self, key: &str) {
         if let Err(e) = self.storage.remove_item(key) {
             ConsoleService::error(&format!("{:#?}", e));
         }
-    } */
+    }
 
     pub fn get_cid(&self, key: &str) -> Option<Cid> {
         let cid = match self.storage.get_item(key) {

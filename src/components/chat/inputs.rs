@@ -20,7 +20,7 @@ use linked_data::{
 
 use web3::types::Address;
 
-//const SIGN_MSG_KEY: &str = "signed_message";
+const SIGN_MSG_KEY: &str = "signed_message";
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -59,6 +59,7 @@ pub enum Msg {
     SubmitName,
     Signed(Result<[u8; 65]>),
     Minted(Result<Cid>),
+    Recover(Result<SignedMessage<ChatId>>),
 }
 
 #[derive(Properties, Clone)]
@@ -74,11 +75,16 @@ impl Component for Inputs {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        //TODO should verify that the signed message has not been garbage collected in between session.
-        /* let (sign_msg_cid, state) = match props.storage.get_cid(SIGN_MSG_KEY) {
-            Some(cid) => (Some(cid), DisplayState::Chatting),
-            None => (None, DisplayState::Connect),
-        }; */
+        let sign_msg_cid = props.storage.get_cid(SIGN_MSG_KEY);
+
+        if let Some(cid) = sign_msg_cid {
+            spawn_local({
+                let cb = link.callback_once(Msg::Recover);
+                let ipfs = props.ipfs.clone();
+
+                async move { cb.emit(ipfs.dag_get(cid, Option::<String>::None).await) }
+            });
+        }
 
         #[cfg(debug_assertions)]
         ConsoleService::info("Chat Inputs Created");
@@ -95,7 +101,7 @@ impl Component for Inputs {
             peer_id: None,
             name: None,
             sign_msg_content: None,
-            sign_msg_cid: None,
+            sign_msg_cid,
         }
     }
 
@@ -110,7 +116,8 @@ impl Component for Inputs {
             Msg::SetName(name) => self.on_name_input(name),
             Msg::SubmitName => self.on_name_submit(),
             Msg::Signed(res) => self.on_signature(res),
-            Msg::Minted(res) => self.on_sign_msg_minted(res),
+            Msg::Minted(res) => self.on_signed_msg_added(res),
+            Msg::Recover(res) => self.on_signed_msg_recovered(res),
         }
     }
 
@@ -196,18 +203,6 @@ impl Inputs {
         }
     }
 
-    fn on_chat_input(&mut self, msg: String) -> bool {
-        if msg.ends_with('\n') {
-            self.temp_msg = msg;
-
-            return self.send_message();
-        }
-
-        self.temp_msg = msg;
-
-        false
-    }
-
     /// Send chat message via gossipsub.
     fn send_message(&mut self) -> bool {
         let message = self.temp_msg.clone();
@@ -273,28 +268,20 @@ impl Inputs {
         false
     }
 
-    /// Callback with response of request accounts.
-    fn on_account_connected(&mut self, response: Result<Address>) -> bool {
-        let address = match response {
-            Ok(address) => address,
-            Err(e) => {
-                ConsoleService::error(&format!("{:?}", e));
-                self.state = DisplayState::Connect;
-                return true;
-            }
-        };
+    fn on_chat_input(&mut self, msg: String) -> bool {
+        if msg.ends_with('\n') {
+            self.temp_msg = msg;
 
-        #[cfg(debug_assertions)]
-        ConsoleService::info(&format!("Address => {}", &address.to_string()));
+            return self.send_message();
+        }
 
-        self.address = Some(address);
+        self.temp_msg = msg;
 
-        spawn_local({
-            let cb = self.link.callback(Msg::AccountName);
-            let web3 = self.props.web3.clone();
+        false
+    }
 
-            async move { cb.emit(web3.get_name(address).await) }
-        });
+    fn on_name_input(&mut self, name: String) -> bool {
+        self.name = Some(name);
 
         false
     }
@@ -317,10 +304,34 @@ impl Inputs {
         false
     }
 
-    fn on_account_name(&mut self, response: Result<String>) -> bool {
-        #[cfg(debug_assertions)]
-        ConsoleService::info("Name Revolved");
+    /// Callback when Metamask get_eth_accounts return an address.
+    fn on_account_connected(&mut self, response: Result<Address>) -> bool {
+        let address = match response {
+            Ok(address) => address,
+            Err(e) => {
+                ConsoleService::error(&format!("{:?}", e));
+                self.state = DisplayState::Connect;
+                return true;
+            }
+        };
 
+        #[cfg(debug_assertions)]
+        ConsoleService::info(&format!("Address => {}", &address.to_string()));
+
+        self.address = Some(address);
+
+        spawn_local({
+            let cb = self.link.callback(Msg::AccountName);
+            let web3 = self.props.web3.clone();
+
+            async move { cb.emit(web3.reverse_resolve(address).await) }
+        });
+
+        false
+    }
+
+    /// Callback when web3 reverse resolve an address and returns a name.
+    fn on_account_name(&mut self, response: Result<String>) -> bool {
         let name = match response {
             Ok(string) => string,
             Err(e) => {
@@ -330,19 +341,26 @@ impl Inputs {
             }
         };
 
+        #[cfg(debug_assertions)]
+        ConsoleService::info(&format!("Address Reverse Revolve => {}", &name));
+
         self.name = Some(name);
         self.state = DisplayState::NameResolved;
 
         true
     }
 
-    fn on_name_input(&mut self, name: String) -> bool {
-        self.name = Some(name);
-
-        false
-    }
-
+    /// Callback when the chat name choice is submited.
     fn on_name_submit(&mut self) -> bool {
+        let name = match self.name.take() {
+            Some(name) => name,
+            None => {
+                #[cfg(debug_assertions)]
+                ConsoleService::error("No Name");
+                return false;
+            }
+        };
+
         #[cfg(debug_assertions)]
         ConsoleService::info("Name Submitted");
 
@@ -364,15 +382,6 @@ impl Inputs {
             }
         };
 
-        let name = match self.name.take() {
-            Some(name) => name,
-            None => {
-                #[cfg(debug_assertions)]
-                ConsoleService::error("No Name");
-                return false;
-            }
-        };
-
         let data = ChatId { name, peer_id };
 
         spawn_local({
@@ -388,10 +397,8 @@ impl Inputs {
         false
     }
 
+    /// Callback when the chat ID has been signed.
     fn on_signature(&mut self, response: Result<[u8; 65]>) -> bool {
-        #[cfg(debug_assertions)]
-        ConsoleService::info("Signature Received");
-
         let signature = match response {
             Ok(sig) => sig.to_vec(),
             Err(e) => {
@@ -400,6 +407,9 @@ impl Inputs {
                 return true;
             }
         };
+
+        #[cfg(debug_assertions)]
+        ConsoleService::info("Signature Received");
 
         let address = match self.address.take() {
             Some(addrs) => addrs.to_fixed_bytes(),
@@ -438,10 +448,8 @@ impl Inputs {
         false
     }
 
-    fn on_sign_msg_minted(&mut self, response: Result<Cid>) -> bool {
-        #[cfg(debug_assertions)]
-        ConsoleService::info("Signed Message Minted");
-
+    ///Callback when the signed chat ID has been added to IPFS.
+    fn on_signed_msg_added(&mut self, response: Result<Cid>) -> bool {
         let cid = match response {
             Ok(cid) => cid,
             Err(e) => {
@@ -451,9 +459,40 @@ impl Inputs {
             }
         };
 
-        //self.props.storage.set_cid(SIGN_MSG_KEY, &cid);
+        #[cfg(debug_assertions)]
+        ConsoleService::info("Signed Message Added");
+
+        self.props.storage.set_cid(SIGN_MSG_KEY, &cid);
 
         self.sign_msg_cid = Some(cid);
+        self.state = DisplayState::Chatting;
+
+        true
+    }
+
+    /// Callback when a signed message is recovered from a previous session.
+    fn on_signed_msg_recovered(&mut self, response: Result<SignedMessage<ChatId>>) -> bool {
+        let signed_msg = match response {
+            Ok(msg) => msg,
+            Err(e) => {
+                #[cfg(debug_assertions)]
+                ConsoleService::error(&format!("{:?}", e));
+
+                self.props.storage.remove_item(SIGN_MSG_KEY);
+
+                return false;
+            }
+        };
+
+        if !signed_msg.verify() {
+            self.props.storage.remove_item(SIGN_MSG_KEY);
+
+            return false;
+        }
+
+        #[cfg(debug_assertions)]
+        ConsoleService::info("Signed Message Recovered");
+
         self.state = DisplayState::Chatting;
 
         true
