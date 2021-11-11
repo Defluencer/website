@@ -1,8 +1,10 @@
 use web_sys::{window, Clipboard};
 
-use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::{Callback, MouseEvent};
+use yew::{
+    prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback, MouseEvent,
+};
 
 use cid::Cid;
 

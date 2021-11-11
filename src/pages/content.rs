@@ -1,19 +1,26 @@
 use std::rc::Rc;
 
-use crate::components::{
-    CommentSection, ExploreCid, IPFSConnectionError, Image, Loading, Markdown, Navbar, VideoPlayer,
+use crate::{
+    components::{
+        CommentSection, ExploreCid, IPFSConnectionError, Image, Loading, Markdown, Navbar,
+        VideoPlayer,
+    },
+    utils::{timestamp_to_datetime, IpfsService},
 };
-use crate::utils::{timestamp_to_datetime, IpfsService};
 
 use wasm_bindgen_futures::spawn_local;
 
-use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::Callback;
+use yew::{
+    prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback,
+};
 
-use linked_data::blog::{FullPost, MicroPost};
-use linked_data::feed::{ContentCache, Media};
-use linked_data::video::VideoMetadata;
+use linked_data::{
+    blog::{FullPost, MicroPost},
+    feed::{ContentCache, Media},
+    video::VideoMetadata,
+};
 
 use either::Either;
 

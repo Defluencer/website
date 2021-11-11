@@ -1,13 +1,16 @@
 use std::rc::Rc;
 
-use crate::components::chat::display::Display;
-use crate::components::chat::inputs::Inputs;
-use crate::utils::{IpfsService, LocalStorage, Web3Service};
+use crate::{
+    components::chat::{display::Display, inputs::Inputs},
+    utils::{IpfsService, LocalStorage, Web3Service},
+};
 
 use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
 
-use linked_data::live::Live;
-use linked_data::moderation::{Bans, Moderators};
+use linked_data::{
+    live::Live,
+    moderation::{Bans, Moderators},
+};
 
 /// Live chat widget
 #[derive(Properties, Clone)]

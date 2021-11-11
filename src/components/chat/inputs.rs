@@ -1,5 +1,4 @@
-use std::rc::Rc;
-use std::str;
+use std::{rc::Rc, str};
 
 use crate::utils::{IpfsService, LocalStorage, Web3Service};
 

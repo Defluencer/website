@@ -1,16 +1,16 @@
-use std::collections::HashSet;
-use std::rc::Rc;
+use std::{collections::HashSet, rc::Rc};
 
 use crate::utils::IpfsService;
 
 use wasm_bindgen_futures::spawn_local;
 
-use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::Callback;
+use yew::{
+    prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback,
+};
 
-use linked_data::comments::Comment;
-use linked_data::feed::ContentCache;
+use linked_data::{comments::Comment, feed::ContentCache};
 
 use cid::Cid;
 

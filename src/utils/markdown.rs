@@ -1,8 +1,12 @@
 /// Original author of this code is [Nathan Ringo](https://github.com/remexre)
 /// Source: https://github.com/acmumn/mentoring/blob/master/web-client/src/view/markdown.rs
 use pulldown_cmark::{Alignment, CodeBlockKind, Event, Options, Parser, Tag};
-use yew::virtual_dom::{VNode, VTag, VText};
-use yew::{html, Classes, Html};
+
+use yew::{
+    html,
+    virtual_dom::{VNode, VTag, VText},
+    Classes, Html,
+};
 
 /// Adds a class to the VTag.
 /// You can also provide multiple classes separated by ascii whitespaces.

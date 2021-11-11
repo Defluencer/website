@@ -1,9 +1,10 @@
-use std::borrow::Cow;
-use std::convert::TryFrom;
+use std::{borrow::Cow, convert::TryFrom};
 
-use web3::transports::eip_1193::{Eip1193, Provider};
-use web3::types::Address;
-use web3::Web3;
+use web3::{
+    transports::eip_1193::{Eip1193, Provider},
+    types::Address,
+    Web3,
+};
 
 use yew::services::ConsoleService;
 

@@ -1,7 +1,9 @@
 use std::rc::Rc;
 
-use crate::components::{ChatWindow, IPFSConnectionError, Navbar, VideoPlayer};
-use crate::utils::{IpfsService, LocalStorage, Web3Service};
+use crate::{
+    components::{ChatWindow, IPFSConnectionError, Navbar, VideoPlayer},
+    utils::{IpfsService, LocalStorage, Web3Service},
+};
 
 use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
 

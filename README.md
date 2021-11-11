@@ -5,6 +5,7 @@ The official project website.
 Visit defluencer.eth on Ropsten testnet for the latest dev build.
 
 ## Requirements
+- [Rust](https://www.rust-lang.org/tools/install)
 - [Trunk](https://trunkrs.dev/#install)
 - [IPFS](https://docs.ipfs.io/install/command-line/#command-line)
 

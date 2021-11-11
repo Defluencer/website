@@ -2,9 +2,11 @@ use crate::utils::IpfsService;
 
 use wasm_bindgen_futures::spawn_local;
 
-use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::Callback;
+use yew::{
+    prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback,
+};
 
 use linked_data::mime_type::MimeTyped;
 

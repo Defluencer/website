@@ -1,9 +1,10 @@
-use crate::components::Navbar;
-use crate::utils::LocalStorage;
+use crate::{components::Navbar, utils::LocalStorage};
 
-use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::{Callback, ChangeData, MouseEvent};
+use yew::{
+    prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback, ChangeData, MouseEvent,
+};
 
 use linked_data::PeerId;
 

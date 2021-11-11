@@ -1,15 +1,19 @@
 use std::rc::Rc;
 
-use crate::app::AppRoute;
-use crate::components::{ExploreCid, Image};
-use crate::utils::{seconds_to_timecode, timestamp_to_datetime, IpfsService};
+use crate::{
+    app::AppRoute,
+    components::{ExploreCid, Image},
+    utils::{seconds_to_timecode, timestamp_to_datetime, IpfsService},
+};
 
 use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
 use yew_router::components::RouterAnchor;
 
-use linked_data::blog::{FullPost, MicroPost};
-use linked_data::feed::Media;
-use linked_data::video::VideoMetadata;
+use linked_data::{
+    blog::{FullPost, MicroPost},
+    feed::Media,
+    video::VideoMetadata,
+};
 
 use cid::Cid;
 

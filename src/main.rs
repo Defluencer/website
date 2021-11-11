@@ -5,8 +5,10 @@ mod components;
 mod pages;
 mod utils;
 
-use crate::app::Props;
-use crate::utils::{IpfsService, LocalStorage, Web3Service};
+use crate::{
+    app::Props,
+    utils::{IpfsService, LocalStorage, Web3Service},
+};
 
 /// ENS Domain name with "defluencer" as subdomain. egg. defluencer.sionois.eth
 /// OR a beacon CID.

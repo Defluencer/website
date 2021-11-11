@@ -1,10 +1,11 @@
-use crate::utils::render_markdown;
-use crate::utils::IpfsService;
+use crate::utils::{render_markdown, IpfsService};
 
 use wasm_bindgen_futures::spawn_local;
 
-use yew::prelude::{Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
+use yew::{
+    prelude::{Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+};
 
 use cid::Cid;
 

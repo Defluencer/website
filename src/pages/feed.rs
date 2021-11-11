@@ -1,14 +1,17 @@
-use std::collections::HashSet;
-use std::rc::Rc;
+use std::{collections::HashSet, rc::Rc};
 
-use crate::components::{IPFSConnectionError, Loading, Navbar, Thumbnail};
-use crate::utils::{IpfsService, LocalStorage};
+use crate::{
+    components::{IPFSConnectionError, Loading, Navbar, Thumbnail},
+    utils::{IpfsService, LocalStorage},
+};
 
 use wasm_bindgen_futures::spawn_local;
 
-use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::{Callback, MouseEvent};
+use yew::{
+    prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback, MouseEvent,
+};
 
 use linked_data::{
     feed::{ContentCache, Media},

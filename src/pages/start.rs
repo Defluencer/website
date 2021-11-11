@@ -69,8 +69,7 @@ impl Component for Start {
                         </ybc::Title>
                         <p>
                         {
-                            "The protocol can be implemented in any programming language but most often using existing code is best.
-                            "
+                            "The protocol can be implemented in any programming language but most often using existing code is best."
                         }
                         </p>
                         <br />

@@ -1,23 +1,26 @@
-use std::collections::VecDeque;
-use std::rc::Rc;
-use std::str;
-use std::str::FromStr;
+use std::{
+    collections::VecDeque,
+    rc::Rc,
+    str::{self, FromStr},
+};
 
-use crate::components::IPFSPubSubError;
-use crate::utils::seconds_to_timecode;
-use crate::utils::{ExponentialMovingAverage, IpfsService};
+use crate::{
+    components::IPFSPubSubError,
+    utils::{seconds_to_timecode, ExponentialMovingAverage, IpfsService},
+};
 
 use futures_util::future::AbortHandle;
 
-use wasm_bindgen::closure::Closure;
-use wasm_bindgen::JsCast;
+use wasm_bindgen::{closure::Closure, JsCast};
 use wasm_bindgen_futures::spawn_local;
 
 use web_sys::{HtmlMediaElement, MediaSource, MediaSourceReadyState, SourceBuffer, Url};
 
-use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::Callback;
+use yew::{
+    prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback,
+};
 
 use linked_data::{
     live::Live,

@@ -1,6 +1,4 @@
-use crate::app::AppRoute;
-use crate::components::Navbar;
-use crate::utils::feature_card;
+use crate::{app::AppRoute, components::Navbar, utils::feature_card};
 
 use yew::prelude::{classes, html, Component, ComponentLink, Html, ShouldRender};
 
