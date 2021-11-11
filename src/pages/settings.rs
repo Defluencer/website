@@ -1,11 +1,11 @@
-use std::rc::Rc;
-
 use crate::components::Navbar;
 use crate::utils::LocalStorage;
 
 use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, ShouldRender};
 use yew::services::ConsoleService;
 use yew::{Callback, ChangeData, MouseEvent};
+
+use linked_data::PeerId;
 
 /* #[derive(PartialEq)]
 pub enum NodeType {
@@ -22,7 +22,7 @@ pub enum OsType {
 /// Page with app settings and options.
 pub struct Settings {
     storage: LocalStorage,
-    peer_id: Rc<Option<String>>,
+    peer_id: Option<PeerId>,
     origin: String,
 
     address: String,
@@ -43,7 +43,7 @@ pub enum Msg {
 #[derive(Properties, Clone)]
 pub struct Props {
     pub storage: LocalStorage,
-    pub peer_id: Rc<Option<String>>,
+    pub peer_id: Option<PeerId>,
 }
 
 impl Component for Settings {
@@ -107,7 +107,7 @@ impl Component for Settings {
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        if !Rc::ptr_eq(&props.peer_id, &self.peer_id) {
+        if props.peer_id != self.peer_id {
             self.peer_id = props.peer_id;
 
             return true;
@@ -126,7 +126,7 @@ impl Component for Settings {
                 <ybc::Section>
                     <ybc::Container>
                         {
-                            match self.peer_id.as_ref() {
+                            match self.peer_id {
                                 Some(peer_id) => self.render_connected(peer_id),
                                 None => self.render_not_connected(),
                             }
@@ -158,12 +158,12 @@ impl Component for Settings {
 }
 
 impl Settings {
-    fn render_connected(&self, peer_id: &str) -> Html {
+    fn render_connected(&self, peer_id: PeerId) -> Html {
         html! {
             <div class="field">
                 <label class="label"> { "IPFS Peer ID" } </label>
                 <div class="control is-expanded">
-                    <input name="ipfs_addrs" value=peer_id.to_owned() class="input is-static" type="text" readonly=true />
+                    <input name="ipfs_addrs" value=peer_id.to_string() class="input is-static" type="text" readonly=true />
                 </div>
                 <p class="help"> { "A unique string identifing this node on the network." } </p>
             </div>

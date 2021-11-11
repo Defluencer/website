@@ -1,27 +1,37 @@
-use std::collections::{HashMap, HashSet};
-use std::convert::TryFrom;
-use std::rc::Rc;
+use std::{
+    collections::{HashMap, HashSet},
+    convert::TryFrom,
+    rc::Rc,
+};
 
-use crate::pages::{Content, ContentFeed, Home, LivePage, Settings, Start};
-use crate::utils::{IpfsService, LocalStorage, Web3Service};
+use crate::{
+    pages::{Content, ContentFeed, Home, LivePage, Settings, Start},
+    utils::{IpfsService, LocalStorage, Web3Service},
+};
 
 use wasm_bindgen_futures::spawn_local;
 
 use serde::de::DeserializeOwned;
 
-use yew::prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender};
-use yew::services::ConsoleService;
-use yew::Callback;
+use yew::{
+    prelude::{html, Component, ComponentLink, Html, Properties, ShouldRender},
+    services::ConsoleService,
+    Callback,
+};
+
 use yew_router::prelude::{Router, Switch};
 
-use linked_data::beacon::Beacon;
-use linked_data::comments::Commentary;
-use linked_data::feed::{ContentCache, FeedAnchor};
-use linked_data::friends::Friendlies;
-use linked_data::identity::Identity;
-use linked_data::live::Live;
-use linked_data::moderation::Bans;
-use linked_data::moderation::Moderators;
+use linked_data::{
+    beacon::Beacon,
+    comments::Commentary,
+    feed::{ContentCache, FeedAnchor},
+    friends::Friendlies,
+    identity::Identity,
+    live::Live,
+    moderation::Bans,
+    moderation::Moderators,
+    PeerId,
+};
 
 use either::Either;
 
@@ -54,8 +64,8 @@ pub enum AppRoute {
 pub struct App {
     props: Props,
 
-    peer_id: Rc<Option<String>>,
-    peer_id_cb: Callback<Result<String>>,
+    peer_id: Option<PeerId>,
+    peer_id_cb: Callback<Result<PeerId>>,
 
     name_cb: Callback<(String, Result<Cid>)>,
 
@@ -96,7 +106,7 @@ pub struct App {
 
 #[allow(clippy::large_enum_variant)]
 pub enum AppMsg {
-    PeerID(Result<String>),
+    PeerID(Result<PeerId>),
     ENSResolve((String, Result<Cid>)),
     Beacon((Cid, Result<Beacon>)),
     Identity(CallbackResult<Identity>),
@@ -124,7 +134,7 @@ impl Component for App {
         let app = Self {
             props,
 
-            peer_id: Rc::from(None),
+            peer_id: None,
             peer_id_cb: link.callback(AppMsg::PeerID),
 
             name_cb: link.callback(AppMsg::ENSResolve),
@@ -187,7 +197,7 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        let peer_id = self.peer_id.clone();
+        let peer_id = self.peer_id;
         let web3 = self.props.web3.clone();
         let ipfs = self.props.ipfs.clone();
         let storage = self.props.storage.clone();
@@ -204,9 +214,9 @@ impl Component for App {
                     render = Router::render(move |switch: AppRoute| {
                         match switch {
                             AppRoute::Content(cid) => html! { <Content ipfs=ipfs.clone() cid=cid content=content.clone() /> },
-                            AppRoute::Settings => html! { <Settings storage=storage.clone() peer_id=peer_id.clone() /> },
-                            AppRoute::Live => html! { <LivePage peer_id=peer_id.clone() ipfs=ipfs.clone() web3=web3.clone() storage=storage.clone() live=live.clone() bans=bans.clone() mods=mods.clone() /> },
-                            AppRoute::Feed => html! { <ContentFeed ipfs=ipfs.clone() storage=storage.clone() content=content.clone() peer_id=peer_id.clone() /> },
+                            AppRoute::Settings => html! { <Settings storage=storage.clone() peer_id=peer_id /> },
+                            AppRoute::Live => html! { <LivePage peer_id=peer_id ipfs=ipfs.clone() web3=web3.clone() storage=storage.clone() live=live.clone() bans=bans.clone() mods=mods.clone() /> },
+                            AppRoute::Feed => html! { <ContentFeed ipfs=ipfs.clone() storage=storage.clone() content=content.clone() peer_id=peer_id /> },
                             AppRoute::Start => html! { <Start /> },
                             AppRoute::Home => html! { <Home /> },
                         }
@@ -227,7 +237,7 @@ impl App {
         });
     }
 
-    fn on_peer_id(&mut self, response: Result<String>) -> bool {
+    fn on_peer_id(&mut self, response: Result<PeerId>) -> bool {
         let id = match response {
             Ok(id) => id,
             Err(e) => {
@@ -236,7 +246,7 @@ impl App {
             }
         };
 
-        self.peer_id = Rc::from(Some(id));
+        self.peer_id = Some(id);
 
         true
     }

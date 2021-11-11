@@ -19,8 +19,11 @@ use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, Sh
 use yew::services::ConsoleService;
 use yew::Callback;
 
-use linked_data::live::Live;
-use linked_data::video::{SetupNode, Track, VideoMetadata};
+use linked_data::{
+    live::Live,
+    video::{SetupNode, Track, VideoMetadata},
+    PeerId,
+};
 
 use either::Either;
 
@@ -54,7 +57,7 @@ struct MediaBuffers {
 struct LiveStream {
     data: Rc<Live>,
 
-    pubsub_cb: Callback<Result<(String, Vec<u8>)>>,
+    pubsub_cb: Callback<Result<(PeerId, Vec<u8>)>>,
     buffer: VecDeque<Cid>,
 
     handle: AbortHandle,
@@ -100,7 +103,7 @@ pub enum Msg {
     SetupNode(Result<SetupNode>),
     Append(Result<(Vec<u8>, Vec<u8>)>),
     AppendVideo(Result<Vec<u8>>),
-    PubSub(Result<(String, Vec<u8>)>),
+    PubSub(Result<(PeerId, Vec<u8>)>),
 }
 
 #[derive(Clone, Properties)]
@@ -360,7 +363,7 @@ impl VideoPlayer {
     }
 
     /// Callback when GossipSub receive an update.
-    fn on_pubsub_update(&mut self, result: Result<(String, Vec<u8>)>) -> bool {
+    fn on_pubsub_update(&mut self, result: Result<(PeerId, Vec<u8>)>) -> bool {
         let res = match result {
             Ok(res) => res,
             Err(e) => {

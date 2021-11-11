@@ -8,15 +8,18 @@ use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, Sh
 #[cfg(debug_assertions)]
 use yew::services::ConsoleService;
 
-use linked_data::live::Live;
-use linked_data::moderation::{Bans, Moderators};
+use linked_data::{
+    live::Live,
+    moderation::{Bans, Moderators},
+    PeerId,
+};
 
 use either::Either;
 
 /// Page displaying live video and chat.
 #[derive(Properties, Clone)]
 pub struct LivePage {
-    pub peer_id: Rc<Option<String>>,
+    pub peer_id: Option<PeerId>,
     pub ipfs: IpfsService,
     pub web3: Web3Service,
     pub storage: LocalStorage,
@@ -44,7 +47,7 @@ impl Component for LivePage {
         if !Rc::ptr_eq(&props.live, &self.live)
             || !Rc::ptr_eq(&props.bans, &self.bans)
             || !Rc::ptr_eq(&props.mods, &self.mods)
-            || !Rc::ptr_eq(&props.peer_id, &self.peer_id)
+            || props.peer_id != self.peer_id
         {
             *self = props;
 

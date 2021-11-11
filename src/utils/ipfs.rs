@@ -1,26 +1,23 @@
 use core::fmt;
-use std::borrow::Cow;
-use std::convert::TryFrom;
-use std::rc::Rc;
+
+use std::{borrow::Cow, convert::TryFrom, rc::Rc};
 
 use crate::utils::local_storage::LocalStorage;
 
-use futures_util::future::Abortable;
-use futures_util::join;
-use futures_util::stream::AbortRegistration;
-use futures_util::{AsyncBufReadExt, TryStreamExt};
+use futures_util::{
+    future::{AbortRegistration, Abortable},
+    join, AsyncBufReadExt, TryStreamExt,
+};
 
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use yew::services::ConsoleService;
-use yew::Callback;
+use yew::{services::ConsoleService, Callback};
 
-use cid::multibase::Base;
-use cid::Cid;
+use cid::{multibase::Base, multihash::MultihashGeneric, Cid};
 
-use reqwest::multipart::Form;
-use reqwest::{Client, Url};
+use linked_data::{peer_id_from_str, PeerId};
+
+use reqwest::{multipart::Form, Client, Url};
 
 pub const DEFAULT_URI: &str = "http://127.0.0.1:5001/api/v0/";
 
@@ -197,7 +194,7 @@ impl IpfsService {
         Ok((cid, node))
     }
 
-    pub async fn ipfs_node_id(&self) -> Result<String> {
+    pub async fn ipfs_node_id(&self) -> Result<PeerId> {
         let url = self.base_url.join("id")?;
 
         let res = self.client.post(url).send().await?;
@@ -207,7 +204,9 @@ impl IpfsService {
             Err(e) => return Err(e.into()),
         };
 
-        Ok(res.id)
+        let peer_id = peer_id_from_str(&res.id)?;
+
+        Ok(peer_id)
     }
 
     pub async fn pubsub_pub<U>(&self, topic: U, msg: U) -> Result<()>
@@ -229,7 +228,7 @@ impl IpfsService {
     pub async fn pubsub_sub<U>(
         &self,
         topic: U,
-        cb: Callback<Result<(String, Vec<u8>)>>,
+        cb: Callback<Result<(PeerId, Vec<u8>)>>,
         regis: AbortRegistration,
     ) where
         U: Into<Cow<'static, str>>,
@@ -245,7 +244,7 @@ impl IpfsService {
     async fn pubsub_stream(
         &self,
         topic: &str,
-        cb: Callback<Result<(String, Vec<u8>)>>,
+        cb: Callback<Result<(PeerId, Vec<u8>)>>,
         regis: AbortRegistration,
     ) -> Result<()> {
         let url = self.base_url.join("pubsub/sub")?;
@@ -267,13 +266,15 @@ impl IpfsService {
             if let Ok(response) = serde_json::from_str::<PubsubSubResponse>(&line) {
                 let PubsubSubResponse { from, data } = response;
 
-                let from = Base::decode(&Base::Base64Pad, from)?;
-                let data = Base::decode(&Base::Base64Pad, data)?;
+                let from = Base::Base64Pad.decode(from)?;
+                let data = Base::Base64Pad.decode(data)?;
 
-                //This is the most common encoding for PeerIds
-                let from = Base::encode(&Base::Base58Btc, from);
+                //Use Peer ID as CID v1 instead of multihash btc58 encoded
+                // https://github.com/libp2p/specs/blob/master/peer-ids/peer-ids.md#string-representation
+                let multihash = MultihashGeneric::from_bytes(&from)?;
+                let cid = Cid::new_v1(0x70, multihash);
 
-                cb.emit(Ok((from, data)));
+                cb.emit(Ok((cid, data)));
 
                 continue;
             }

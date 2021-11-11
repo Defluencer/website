@@ -21,7 +21,7 @@ use yew::{
 };
 
 use linked_data::{
-    chat::{ChatId, MessageType, SignedChat},
+    chat::{ChatId, ChatMessage, MessageType},
     live::Live,
     moderation::{Ban, Bans, ChatModerationCache, Moderators},
     signature::SignedMessage,
@@ -37,9 +37,9 @@ pub struct Display {
 
     error: bool,
 
-    msg_cb: Callback<(PeerId, MessageType, Result<SignedMessage<ChatId>>)>,
+    msg_cb: Callback<(PeerId, ChatMessage, Result<SignedMessage<ChatId>>)>,
 
-    pubsub_cb: Callback<Result<(String, Vec<u8>)>>,
+    pubsub_cb: Callback<Result<(PeerId, Vec<u8>)>>,
     handle: AbortHandle,
 
     img_gen: Ethereum,
@@ -54,8 +54,8 @@ pub struct Display {
 
 #[allow(clippy::large_enum_variant)]
 pub enum Msg {
-    PubSub(Result<(String, Vec<u8>)>),
-    Origin((PeerId, MessageType, Result<SignedMessage<ChatId>>)),
+    PubSub(Result<(PeerId, Vec<u8>)>),
+    Origin((PeerId, ChatMessage, Result<SignedMessage<ChatId>>)),
 }
 
 #[derive(Properties, Clone)]
@@ -214,7 +214,7 @@ impl Component for Display {
 
 impl Display {
     /// Callback when GossipSub receive a message.
-    fn on_pubsub_update(&mut self, result: Result<(String, Vec<u8>)>) -> bool {
+    fn on_pubsub_update(&mut self, result: Result<(PeerId, Vec<u8>)>) -> bool {
         let res = match result {
             Ok(res) => res,
             Err(e) => {
@@ -227,16 +227,16 @@ impl Display {
         #[cfg(debug_assertions)]
         ConsoleService::info("PubSub Message Received");
 
-        let (from, data) = res;
+        let (peer_id, data) = res;
 
         #[cfg(debug_assertions)]
-        ConsoleService::info(&format!("Sender => {}", from));
+        ConsoleService::info(&format!("Sender => {:?}", peer_id));
 
-        if self.mod_db.is_banned(&from) {
+        if self.mod_db.is_banned(&peer_id) {
             return false;
         }
 
-        let msg: MessageType = match serde_json::from_slice(&data) {
+        let msg: ChatMessage = match serde_json::from_slice(&data) {
             Ok(msg) => msg,
             Err(e) => {
                 ConsoleService::error(&format!("{:?}", e));
@@ -244,29 +244,35 @@ impl Display {
             }
         };
 
-        if !self.mod_db.is_verified(&from, &msg.signature()) {
-            self.get_origin(from, msg);
+        if !self.mod_db.is_verified(&peer_id, &msg.signature.link) {
+            self.get_origin(peer_id, msg);
             return false;
         }
 
-        self.process_msg(from, msg)
+        self.process_msg(peer_id, msg)
     }
 
-    fn get_origin(&self, from: String, msg: MessageType) {
+    fn get_origin(&self, peer_id: PeerId, msg: ChatMessage) {
         spawn_local({
             let cb = self.msg_cb.clone();
             let ipfs = self.props.ipfs.clone();
-            let cid = msg.signature();
+            let cid = msg.signature.link;
 
-            async move { cb.emit((from, msg, ipfs.dag_get(cid, Option::<String>::None).await)) }
+            async move {
+                cb.emit((
+                    peer_id,
+                    msg,
+                    ipfs.dag_get(cid, Option::<String>::None).await,
+                ))
+            }
         });
     }
 
     /// Callback when IPFS dag get return signed message node.
     fn on_signed_msg(
         &mut self,
-        peer: String,
-        msg: MessageType,
+        peer: PeerId,
+        msg: ChatMessage,
         response: Result<SignedMessage<ChatId>>,
     ) -> bool {
         let sign_msg = match response {
@@ -283,8 +289,8 @@ impl Display {
         let trusted = sign_msg.verify();
 
         self.mod_db.add_peer(
-            &sign_msg.data.peer_id,
-            msg.signature(),
+            sign_msg.data.peer_id,
+            msg.signature.link,
             sign_msg.address,
             Some(sign_msg.data.name),
         );
@@ -306,7 +312,7 @@ impl Display {
         #[cfg(debug_assertions)]
         ConsoleService::info("Verifiable => true");
 
-        if self.props.bans.banned.contains(&sign_msg.address) {
+        if self.props.bans.banned_addrs.contains(&sign_msg.address) {
             self.mod_db.ban_peer(&peer);
             return false;
         }
@@ -314,17 +320,17 @@ impl Display {
         self.process_msg(peer, msg)
     }
 
-    fn process_msg(&mut self, peer: PeerId, msg: MessageType) -> bool {
-        match msg {
-            MessageType::Chat(msg) => self.update_display(&peer, msg.content()),
-            MessageType::Ban(ban) => self.update_bans(&peer, ban),
+    fn process_msg(&mut self, peer: PeerId, msg: ChatMessage) -> bool {
+        match msg.message {
+            MessageType::Text(text) => self.update_display(&peer, &text),
+            MessageType::Ban(ban) => self.update_bans(&peer, &ban),
             MessageType::Mod(_) => false, //TODO
         }
     }
 
-    fn update_display(&mut self, peer: &str, msg: &str) -> bool {
+    fn update_display(&mut self, peer: &PeerId, text: &str) -> bool {
         #[cfg(debug_assertions)]
-        ConsoleService::info(&format!("Message => {}", msg));
+        ConsoleService::info(&format!("Message => {}", text));
 
         let address = match self.mod_db.get_address(peer) {
             Some(addrs) => addrs,
@@ -350,7 +356,7 @@ impl Display {
             ConsoleService::error(&format!("{:?}", e));
         }
 
-        let msg_data = MessageData::new(self.next_id, &data, name, msg);
+        let msg_data = MessageData::new(self.next_id, &data, name, text);
 
         self.chat_messages.push_back(msg_data);
 
@@ -363,7 +369,7 @@ impl Display {
         true
     }
 
-    fn update_bans(&mut self, peer: &str, ban: Ban) -> bool {
+    fn update_bans(&mut self, peer: &PeerId, ban: &Ban) -> bool {
         let address = match self.mod_db.get_address(peer) {
             Some(addrs) => addrs,
             None => {
@@ -373,11 +379,11 @@ impl Display {
             }
         };
 
-        if !self.props.mods.mods.contains(address) {
+        if !self.props.mods.moderator_addrs.contains(address) {
             return false;
         }
 
-        self.mod_db.ban_peer(ban.peer_id());
+        self.mod_db.ban_peer(&ban.ban_peer);
 
         false
     }

@@ -10,7 +10,10 @@ use yew::prelude::{classes, html, Component, ComponentLink, Html, Properties, Sh
 use yew::services::ConsoleService;
 use yew::{Callback, MouseEvent};
 
-use linked_data::feed::{ContentCache, Media};
+use linked_data::{
+    feed::{ContentCache, Media},
+    PeerId,
+};
 
 use cid::Cid;
 
@@ -57,7 +60,7 @@ pub struct Props {
     pub ipfs: IpfsService,
     pub storage: LocalStorage,
     pub content: Rc<ContentCache>,
-    pub peer_id: Rc<Option<String>>,
+    pub peer_id: Option<PeerId>,
 }
 
 impl Component for ContentFeed {
@@ -103,7 +106,7 @@ impl Component for ContentFeed {
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        if !Rc::ptr_eq(&props.peer_id, &self.props.peer_id) && props.peer_id.is_some() {
+        if props.peer_id != self.props.peer_id && props.peer_id.is_some() {
             self.state = MachineState::Loading;
         }
 

@@ -13,9 +13,10 @@ use yew::{
 use cid::Cid;
 
 use linked_data::{
-    chat::{ChatId, ChatMessage, ChatSig},
+    chat::{ChatId, ChatMessage, ChatSig, MessageType},
     live::Live,
     signature::SignedMessage,
+    PeerId,
 };
 
 use web3::types::Address;
@@ -42,7 +43,7 @@ pub struct Inputs {
     temp_msg: String,
 
     address: Option<Address>,
-    peer_id: Option<String>,
+    peer_id: Option<PeerId>,
     name: Option<String>,
     sign_msg_content: Option<ChatId>,
     sign_msg_cid: Option<ChatSig>,
@@ -52,7 +53,7 @@ pub enum Msg {
     Set(String),
     Enter,
     Connect,
-    PeerID(Result<String>),
+    PeerID(Result<PeerId>),
     Account(Result<Address>),
     AccountName(Result<String>),
     SetName(String),
@@ -205,7 +206,7 @@ impl Inputs {
 
     /// Send chat message via gossipsub.
     fn send_message(&mut self) -> bool {
-        let message = self.temp_msg.clone();
+        let text = self.temp_msg.clone();
 
         let cid = match self.sign_msg_cid {
             Some(cid) => cid,
@@ -216,7 +217,10 @@ impl Inputs {
             }
         };
 
-        let chat_msg = ChatMessage::new(message, cid);
+        let chat_msg = ChatMessage {
+            message: MessageType::Text(text),
+            signature: cid.into(),
+        };
 
         let json_string = match serde_json::to_string(&chat_msg) {
             Ok(json_string) => json_string,
@@ -286,8 +290,8 @@ impl Inputs {
         false
     }
 
-    fn on_peer_id(&mut self, response: Result<String>) -> bool {
-        let id = match response {
+    fn on_peer_id(&mut self, response: Result<PeerId>) -> bool {
+        let peer_id = match response {
             Ok(id) => id,
             Err(e) => {
                 ConsoleService::error(&format!("{:?}", e));
@@ -297,9 +301,9 @@ impl Inputs {
         };
 
         #[cfg(debug_assertions)]
-        ConsoleService::info(&format!("Peer ID => {}", &id));
+        ConsoleService::info(&format!("Peer ID => {:?}", &peer_id));
 
-        self.peer_id = Some(id);
+        self.peer_id = Some(peer_id);
 
         false
     }
@@ -382,7 +386,7 @@ impl Inputs {
             }
         };
 
-        let data = ChatId { name, peer_id };
+        let data = ChatId { peer_id, name };
 
         spawn_local({
             let cb = self.link.callback_once(Msg::Signed);
@@ -400,7 +404,7 @@ impl Inputs {
     /// Callback when the chat ID has been signed.
     fn on_signature(&mut self, response: Result<[u8; 65]>) -> bool {
         let signature = match response {
-            Ok(sig) => sig.to_vec(),
+            Ok(sig) => sig,
             Err(e) => {
                 ConsoleService::error(&format!("{:?}", e));
                 self.state = DisplayState::Connect;
