@@ -132,12 +132,22 @@ impl Component for Home {
                     <ybc::Container>
                         <ybc::Columns>
                             <ybc::Column classes=classes!("is-half") >
-                                <a href="https://github.com/Defluencer/website">
-                                    <span class="icon-text">
-                                        <span> {"Source Code"} </span>
-                                        <span class="icon"><i class="fab fa-github"></i></span>
-                                    </span>
-                                </a>
+                                <p>
+                                    <a href="https://github.com/Defluencer/website">
+                                        <span class="icon-text">
+                                            <span> {"Source Code"} </span>
+                                            <span class="icon"><i class="fab fa-github"></i></span>
+                                        </span>
+                                    </a>
+                                </p>
+                                <p>
+                                    <a href="https://twitter.com/defluencermedia">
+                                        <span class="icon-text">
+                                            <span> {"Twitter"} </span>
+                                            <span class="icon"><i class="fab fa-twitter"></i></span>
+                                        </span>
+                                    </a>
+                                </p>
                             </ybc::Column>
                             <ybc::Column classes=classes!("is-half") >
                                 <a href="https://bulma.io">

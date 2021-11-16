@@ -152,7 +152,7 @@ impl Component for Inputs {
 impl Inputs {
     fn connect_dialog(&self) -> Html {
         html! {
-            <ybc::Field label="To chat, please connect Metamask".to_owned() >
+            <ybc::Field label="To chat, please connect your wallet".to_owned() >
                 <ybc::Button classes=classes!("is-primary") onclick=self.link.callback(|_| Msg::Connect) >
                     { "Connect" }
                 </ybc::Button>
