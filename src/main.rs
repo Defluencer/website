@@ -12,7 +12,7 @@ use crate::{
 
 /// ENS Domain name with "defluencer" as subdomain. egg. defluencer.sionois.eth
 /// OR a beacon CID.
-const BEACON: &str = "bafyreieoextjee6sm5hpaxdhkseypz3by6vzcwddhxa673ozmxxjwv3hv4";
+const BEACON: &str = "bafyreihvbmv7rgtqa5zlg4v2l7elbo5hwshrhzg5dfjphe54qdg2ay5s2i";
 //const BEACON: &str = "sionois";
 
 fn main() {

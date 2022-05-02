@@ -221,7 +221,7 @@ impl Settings {
                             <a href="https://github.com/ipfs-shipyard/ipfs-webui#configure-ipfs-api-cors-headers">
                                 {"cross-origin (CORS) requests"}
                             </a>
-                            {"? If not, run these terminal commands and restart your daemon."}
+                            {"? If not, run these terminal commands and restart your IPFS daemon."}
                         </p>
                         <ybc::Tabs classes=classes!("is-small")>
                             <li class={if let OsType::Unix = self.os_type {"is-active"} else {""}} >
@@ -246,6 +246,9 @@ impl Settings {
                             </li>
                         </ybc::Tabs>
                         { self.render_code() }
+                    </li>
+                    <li>
+                        <p>{ "Note that ad blockers can prevent your browser from communicating with IPFS." }</p>
                     </li>
                 </ol>
                 </ybc::Block>
